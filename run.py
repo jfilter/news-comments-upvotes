@@ -2,7 +2,7 @@ import datetime
 import os
 import sys
 import csv
-import pickle
+import json
 
 from shutil import copyfile
 
@@ -96,8 +96,9 @@ def train():
     history = model.fit(X_train, y_train, epochs=2,
                         batch_size=32, validation_split=0.1)
     print(history.history)
-    with open(exp_path + '/training_history.bin', 'wb') as file_pi:
-        pickle.dump(history.history, file_pi)
+
+    json.dump(history.history, open(exp_path + '/training_history.json', 'wb'))
+
     vis.plot_history(history, exp_path)
 
 
