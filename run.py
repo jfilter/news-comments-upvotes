@@ -1,7 +1,11 @@
+import datetime
 import os
 import sys
 import csv
 import pickle
+
+from shutil import copyfile
+
 
 import keras
 import numpy as np
@@ -11,7 +15,12 @@ from keras_text.data import Dataset
 from keras_text.models import AlexCNN, AttentionRNN, StackedRNN, TokenModelFactory, YoonKimCNN, BasicLSTM
 from keras_text.preprocessing import SimpleTokenizer
 
-max_len = 400
+import pathlib
+
+
+import vis
+
+max_len = 50
 
 path = 'imdb_proc_data.bin'
 
@@ -54,6 +63,12 @@ def build_dataset():
 
 
 def train():
+    exp_path = os.path.join(
+        'experiments', datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    pathlib.Path(exp_path).mkdir(parents=True)
+
+    copyfile('./run.py', exp_path + '/run.py')
+
     ds = Dataset.load(path)
     X_train, _, y_train, _ = ds.train_val_split()
 
@@ -78,10 +93,12 @@ def train():
                   loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()
 
-    history = model.fit(X_train, y_train, epochs=50,
+    history = model.fit(X_train, y_train, epochs=2,
                         batch_size=32, validation_split=0.1)
-    with open('training_history', 'wb') as file_pi:
+    print(history.history)
+    with open(exp_path + '/training_history.bin', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
+    vis.plot_history(history, exp_path)
 
 
 def main():

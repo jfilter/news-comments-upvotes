@@ -10,6 +10,7 @@ python_version = "3.6"
 
 [packages]
 tensorflow = "*"
+matplotlib = "*"
 
 [packages.keras-text]
 editable = true
