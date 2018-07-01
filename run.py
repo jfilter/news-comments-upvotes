@@ -20,16 +20,16 @@ import pathlib
 
 import vis
 
-max_len = 50
+from config import *
 
-path = 'imdb_proc_data.bin'
+max_len = 50
 
 
 def build_dataset():
     X = []
     y = []
 
-    with open('/Users/filter/data/pol_comments_selection.csv') as csvfile:
+    with open(path_data) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             try:
@@ -59,7 +59,7 @@ def build_dataset():
 
     ds = Dataset(X_padded, y_cat, tokenizer=tokenizer)
     ds.update_test_indices(test_size=0.1)
-    ds.save(path)
+    ds.save(path_for_proc_data)
 
 
 def train():
@@ -69,7 +69,7 @@ def train():
 
     copyfile('./run.py', exp_path + '/run.py')
 
-    ds = Dataset.load(path)
+    ds = Dataset.load(path_for_proc_data)
     X_train, _, y_train, _ = ds.train_val_split()
 
     print(ds.tokenizer.decode_texts(X_train[:10]))
@@ -78,7 +78,7 @@ def train():
 
     # RNN models can use `max_tokens=None` to indicate variable length words per mini-batch.
     factory = TokenModelFactory(
-        2, ds.tokenizer.token_index, max_tokens=max_len, embedding_path='/Users/filter/data/guardian-twokenized-lower-50.vec', embedding_dims=50)
+        2, ds.tokenizer.token_index, max_tokens=max_len, embedding_path=path_embedding, embedding_dims=50)
     # 2, ds.tokenizer.token_index, max_tokens=max_len, embedding_type='fasttext.simple')
 
     # word_encoder_model = YoonKimCNN()
