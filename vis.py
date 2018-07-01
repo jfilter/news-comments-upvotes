@@ -1,6 +1,14 @@
+import os
+
 # https://www.kaggle.com/danbrice/keras-plot-history-full-report-and-grid-search
 import matplotlib
-matplotlib.use('TkAgg')
+
+if os.environ.get('DISPLAY', '') == '':
+    print('no display found. Using non-interactive Agg backend')
+    matplotlib.use('Agg')
+else:
+    matplotlib.use('TkAgg')
+
 import matplotlib.pyplot as plt
 
 
