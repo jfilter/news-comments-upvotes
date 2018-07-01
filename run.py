@@ -1,0 +1,97 @@
+import os
+import sys
+import csv
+import pickle
+
+import keras
+import numpy as np
+
+from keras_text.corpus import imdb
+from keras_text.data import Dataset
+from keras_text.models import AlexCNN, AttentionRNN, StackedRNN, TokenModelFactory, YoonKimCNN, BasicLSTM
+from keras_text.preprocessing import SimpleTokenizer
+
+max_len = 400
+
+path = 'imdb_proc_data.bin'
+
+
+def build_dataset():
+    X = []
+    y = []
+
+    with open('/Users/filter/data/pol_comments_selection.csv') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            try:
+                new_x = row['comment_text']
+                X.append(new_x)
+                y.append(int(row['bin']))
+            except Exception as e:
+                print(e)
+
+    tokenizer = SimpleTokenizer()
+
+    tokenizer.build_vocab(X)
+
+    # tokenizer.apply_encoding_options(limit_top_tokens=5000)
+
+    print(list(tokenizer.token_index)[:50])
+    user_token = tokenizer.token_index['<user>']
+    print(user_token)
+
+    X_encoded = tokenizer.encode_texts(X)
+    X_padded = tokenizer.pad_sequences(
+        X_encoded, fixed_token_seq_length=max_len)
+
+    y_cat = keras.utils.to_categorical(y, num_classes=2)
+
+    print(y_cat[:10])
+
+    ds = Dataset(X_padded, y_cat, tokenizer=tokenizer)
+    ds.update_test_indices(test_size=0.1)
+    ds.save(path)
+
+
+def train():
+    ds = Dataset.load(path)
+    X_train, _, y_train, _ = ds.train_val_split()
+
+    print(ds.tokenizer.decode_texts(X_train[:10]))
+
+    print(y_train[:10])
+
+    # RNN models can use `max_tokens=None` to indicate variable length words per mini-batch.
+    factory = TokenModelFactory(
+        2, ds.tokenizer.token_index, max_tokens=max_len, embedding_path='/Users/filter/data/guardian-twokenized-lower-50.vec', embedding_dims=50)
+    # 2, ds.tokenizer.token_index, max_tokens=max_len, embedding_type='fasttext.simple')
+
+    # word_encoder_model = YoonKimCNN()
+    # word_encoder_model = AlexCNN(dropout_rate=[0, 0])
+    # word_encoder_model = AttentionRNN()
+    # word_encoder_model = StackedRNN()
+    word_encoder_model = BasicLSTM()
+    model = factory.build_model(
+        token_encoder_model=word_encoder_model, trainable_embeddings=False)
+
+    model.compile(optimizer='sgd',
+                  loss='categorical_crossentropy', metrics=['accuracy'])
+    model.summary()
+
+    history = model.fit(X_train, y_train, epochs=50,
+                        batch_size=32, validation_split=0.1)
+    with open('training_history', 'wb') as file_pi:
+        pickle.dump(history.history, file_pi)
+
+
+def main():
+    if len(sys.argv) != 2:
+        raise 'error'
+    if sys.argv[1] == 'build':
+        build_dataset()
+    if sys.argv[1] == 'train':
+        train()
+
+
+if __name__ == '__main__':
+    main()
