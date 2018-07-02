@@ -1,25 +1,24 @@
 import os
+import json
 
 # https://www.kaggle.com/danbrice/keras-plot-history-full-report-and-grid-search
 import matplotlib
 
 if os.environ.get('DISPLAY', '') == '':
-    print('no display found. Using non-interactive Agg backend')
+    print('No display found. Using non-interactive Agg backend')
     matplotlib.use('Agg')
-else:
-    matplotlib.use('TkAgg')
 
 import matplotlib.pyplot as plt
 
 
-def plot_history(history, path):
-    loss_list = [s for s in history.history.keys(
+def _plot_history(history, path):
+    loss_list = [s for s in history.keys(
     ) if 'loss' in s and 'val' not in s]
-    val_loss_list = [s for s in history.history.keys()
+    val_loss_list = [s for s in history.keys()
                      if 'loss' in s and 'val' in s]
-    acc_list = [s for s in history.history.keys(
+    acc_list = [s for s in history.keys(
     ) if 'acc' in s and 'val' not in s]
-    val_acc_list = [s for s in history.history.keys()
+    val_acc_list = [s for s in history.keys()
                     if 'acc' in s and 'val' in s]
 
     if len(loss_list) == 0:
@@ -27,16 +26,16 @@ def plot_history(history, path):
         return
 
     # As loss always exists
-    epochs = range(1, len(history.history[loss_list[0]]) + 1)
+    epochs = range(1, len(history[loss_list[0]]) + 1)
 
     # Loss
     plt.figure(1)
     for l in loss_list:
-        plt.plot(epochs, history.history[l], 'b', label='Training loss (' + str(
-            str(format(history.history[l][-1], '.5f'))+')'))
+        plt.plot(epochs, history[l], 'b', label='Training loss (' + str(
+            str(format(history[l][-1], '.5f'))+')'))
     for l in val_loss_list:
-        plt.plot(epochs, history.history[l], 'g', label='Validation loss (' + str(
-            str(format(history.history[l][-1], '.5f'))+')'))
+        plt.plot(epochs, history[l], 'g', label='Validation loss (' + str(
+            str(format(history[l][-1], '.5f'))+')'))
 
     plt.title('Loss')
     plt.xlabel('Epochs')
@@ -48,14 +47,24 @@ def plot_history(history, path):
     # Accuracy
     plt.figure(2)
     for l in acc_list:
-        plt.plot(epochs, history.history[l], 'b', label='Training accuracy (' + str(
-            format(history.history[l][-1], '.5f'))+')')
+        plt.plot(epochs, history[l], 'b', label='Training accuracy (' + str(
+            format(history[l][-1], '.5f'))+')')
     for l in val_acc_list:
-        plt.plot(epochs, history.history[l], 'g', label='Validation accuracy (' + str(
-            format(history.history[l][-1], '.5f'))+')')
+        plt.plot(epochs, history[l], 'g', label='Validation accuracy (' + str(
+            format(history[l][-1], '.5f'))+')')
 
     plt.title('Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
     plt.savefig(path + '/accuracy.png')
+
+
+def plot_history(history_dict, path):
+    _plot_history(history_dict.history, path)
+
+
+def plot_history_json_file(json_path, path):
+    with open(json_path) as handle:
+        dictdump = json.loads(handle.read())
+        _plot_history(dictdump, path)
