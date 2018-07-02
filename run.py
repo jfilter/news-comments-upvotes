@@ -97,7 +97,8 @@ def train():
                         batch_size=32, validation_split=0.1)
     print(history.history)
 
-    json.dump(history.history, open(exp_path + '/training_history.json', 'wb'))
+    with open(exp_path + '/training_history.json', 'w') as file:
+        file.write(json.dumps(history.history))
 
     vis.plot_history(history, exp_path)
 
