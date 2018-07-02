@@ -96,7 +96,7 @@ def train():
     # checkpoint = keras.callbacks.ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 
     # check 5 epochs
-    early_stop = keras.callbacks.EarlyStopping(monitor='val_acc', patience=5)
+    early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
 
     # callbacks_list = [checkpoint, early_stop]
     callbacks_list = [early_stop]
