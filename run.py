@@ -91,10 +91,20 @@ def train():
 
     model.compile(optimizer='sgd',
                   loss='categorical_crossentropy', metrics=['accuracy'])
+
+    # filepath="weights.best.hdf5"
+    # checkpoint = keras.callbacks.ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+
+    # check 5 epochs
+    early_stop = keras.callbacks.EarlyStopping(monitor='val_acc', patience=5)
+
+    # callbacks_list = [checkpoint, early_stop]
+    callbacks_list = [early_stop]
+
     model.summary()
 
     history = model.fit(X_train, y_train, epochs=2,
-                        batch_size=32, validation_split=0.1)
+                        batch_size=32, validation_split=0.1, callbacks=callbacks_list)
     print(history.history)
 
     with open(exp_path + '/training_history.json', 'w') as file:
