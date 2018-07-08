@@ -14,6 +14,7 @@ from keras_text.models import AlexCNN, AttentionRNN, BasicLSTM, StackedRNN, Toke
 from keras_text.preprocessing import SimpleTokenizer
 
 max_len = 400
+embedding_dims = 300
 
 epochs = 10
 batch_size = 32
@@ -44,7 +45,7 @@ def train():
     print(y_val[:10])
 
     factory = TokenModelFactory(
-        2, ds_train.tokenizer.token_index, max_tokens=max_len, embedding_path=path_embedding, embedding_dims=50)
+        2, ds_train.tokenizer.token_index, max_tokens=max_len, embedding_path=path_embedding, embedding_dims=embedding_dims)
 
     model = factory.build_model(
         token_encoder_model=word_encoder_model, trainable_embeddings=False)
