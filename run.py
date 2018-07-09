@@ -1,7 +1,7 @@
 import json
 import pathlib
 import sys
-from shutil import copyfile
+from shutil import copyfile, move
 
 import keras
 import numpy as np
@@ -29,7 +29,7 @@ def train():
     # word_encoder_model = StackedRNN()
     # word_encoder_model = BasicLSTM()
 
-    exp_path = util.create_exp_dir()
+    exp_path = util.create_exp_dir(path_data)
     copyfile('./run.py', exp_path + '/run.py')
 
     ds_train = Dataset.load(dir_proc_data + '/train.bin')
@@ -66,6 +66,11 @@ def train():
                         batch_size=batch_size, validation_data=(X_val, y_val), callbacks=callbacks_list)
 
     vis.plot_history(history, exp_path)
+
+    best_acc = str(max(history.history['val_acc']))[:6]
+
+    # append best acc
+    move(exp_path, exp_path + '_' + best_acc)
 
 
 def test_data():
