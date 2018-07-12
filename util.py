@@ -5,24 +5,29 @@ import pathlib
 
 import keras
 
+from config import *
 from keras_text.data import Dataset
 
-exp_folder = 'experiments'
 
-
-def create_exp_dir(path_data):
+# date=datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+def create_exp_dir(path_data, model_str, lr, bs, prefix=None, exp_folder='experiments',):
     # asume the last name is the data name
     data_name = path_data.split('/')[-1]
     num_folders = len(next(os.walk(exp_folder))[1])
 
     # 4 digits
-    epx_id_prefix = "%04d" % num_folders
+    epx_id_prefix = "%05d" % num_folders
 
-    filename = epx_id_prefix + '_' + data_name + '_' + \
-        datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    filename = epx_id_prefix + '_' + data_name + "_" + model_str + "_lr_" + \
+        str(round(lr, 3)) + "_bs_" + str(round(bs, 3))
 
-    exp_path = os.path.join(
-        exp_folder, filename)
+    filename = filename.replace('.', '_')
+
+    if prefix is None:
+        exp_path = os.path.join(prefix, exp_folder, filename)
+    else:
+        exp_path = os.path.join(
+            exp_folder, filename)
     pathlib.Path(exp_path).mkdir(parents=True)
     return exp_path
 
@@ -56,3 +61,12 @@ def build_save_data(X, y, tokenizer, path, max_len):
     ds = Dataset(X_padded,
                  y_cat, tokenizer=tokenizer)
     ds.save(path)
+
+
+def load_train_val():
+    ds_train = Dataset.load(dir_proc_data + '/train.bin')
+    X_train, y_train = ds_train.X, ds_train.y
+
+    ds_val = Dataset.load(dir_proc_data + '/val.bin')
+    X_val, y_val = ds_val.X, ds_val.y
+    return X_train, y_train, X_val, y_val, ds_train.tokenizer
