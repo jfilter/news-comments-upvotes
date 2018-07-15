@@ -11,9 +11,12 @@ from keras_text.data import Dataset
 
 # date=datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 def create_exp_dir(path_data, model_str, lr, bs, prefix=None, exp_folder='experiments',):
+
     # asume the last name is the data name
     data_name = path_data.split('/')[-1]
-    num_folders = len(next(os.walk(exp_folder))[1])
+    exp_dir = os.path.join(prefix, exp_folder)
+    pathlib.Path(exp_dir).mkdir(parents=True, exist_ok=True)
+    num_folders = len(next(os.walk(exp_dir))[1])
 
     # 4 digits
     epx_id_prefix = "%05d" % num_folders
@@ -23,11 +26,7 @@ def create_exp_dir(path_data, model_str, lr, bs, prefix=None, exp_folder='experi
 
     filename = filename.replace('.', '_')
 
-    if prefix is None:
-        exp_path = os.path.join(prefix, exp_folder, filename)
-    else:
-        exp_path = os.path.join(
-            exp_folder, filename)
+    exp_path = os.path.join(prefix, exp_folder, filename)
     pathlib.Path(exp_path).mkdir(parents=True)
     return exp_path
 
@@ -42,7 +41,7 @@ def load_data(path):
             try:
                 new_x = row['comment_text']
                 X.append(new_x)
-                y.append(int(row['class']))
+                y.append(int(float(row['class'])))
             except Exception as e:
                 print(e)
 

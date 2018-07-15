@@ -18,31 +18,31 @@ from keras_text.preprocessing import SimpleTokenizer
 random.seed()
 
 max_len = 400
-embedding_dims = 50
+embedding_dims = 300
 
-epochs = 200
+epochs = 400
 patience = 10
 
-
-def train_stacked(lr=0.001, batch_size=50, dropout_rate=0.5, hidden_dims=[50, 50], rnn_class=keras.layers.GRU, dir=None):
+batch_size = 10000
+def train_stacked(lr=0.001, batch_size=batch_size, dropout_rate=0.5, hidden_dims=[10, 5], rnn_class=keras.layers.GRU, e_dir=None):
     word_encoder_model = StackedRNN(
         hidden_dims=hidden_dims, dropout_rate=dropout_rate, rnn_class=rnn_class)
-    train(word_encoder_model, lr, batch_size, dir=dir)
+    train(word_encoder_model, lr, batch_size, e_dir=e_dir)
 
 
-def train_cnn(lr=0.001, batch_size=50, dropout_rate=0.5, filter_sizes=[3, 4, 5], num_filters=20, dir=None):
+def train_cnn(lr=0.001, batch_size=batch_size, dropout_rate=0.5, filter_sizes=[3, 4, 5], num_filters=20, e_dir=None):
     word_encoder_model = YoonKimCNN(
         filter_sizes=filter_sizes, num_filters=num_filters, dropout_rate=dropout_rate)
-    train(word_encoder_model, lr, batch_size, dir=dir)
+    train(word_encoder_model, lr, batch_size, e_dir=e_dir)
 
 
-def train_attention(lr=0.001, batch_size=50, dropout_rate=0.5, encoder_dims=50, rnn_class=keras.layers.GRU, dir=None):
+def train_attention(lr=0.001, batch_size=50, dropout_rate=0.5, encoder_dims=50, rnn_class=keras.layers.GRU, e_dir=None):
     word_encoder_model = AttentionRNN(
         encoder_dims=encoder_dims, dropout_rate=dropout_rate, rnn_class=rnn_class)
-    train(word_encoder_model, lr, batch_size, dir=dir)
+    train(word_encoder_model, lr, batch_size, e_dir=e_dir)
 
 
-def train(word_encoder_model, lr, batch_size, dir=None):
+def train(word_encoder_model, lr, batch_size, e_dir=None):
     optimizer = keras.optimizers.adam(lr=lr)
 
     X_train, y_train, X_val, y_val, tokenizer = util.load_train_val()
@@ -57,7 +57,7 @@ def train(word_encoder_model, lr, batch_size, dir=None):
                   loss='categorical_crossentropy', metrics=['accuracy'])
 
     exp_path = util.create_exp_dir(path_data, str(
-        word_encoder_model), lr=lr, bs=batch_size, prefix=dir)
+        word_encoder_model), lr=lr, bs=batch_size, prefix=e_dir)
     copyfile('./run.py', exp_path + '/run.py')
 
     print(exp_path)
@@ -91,21 +91,32 @@ def test_data():
 
 
 def search_hyper_cnn():
-    pass
-
+    e_dir = '/mnt/data/group07/johannes/exp_cnn_0.25'
+    while(True):
+        filter_sizes = None
+        while(True):
+            num_filter_sizes = random.randint(2, 4)
+            filter_sizes = random.sample(range(1, 10), num_filter_sizes)
+            if 2 in filter_sizes or 3 in filter_sizes:
+                break
+        num_filters = random.randint(10, 30)
+        lr = random.uniform(0.0001, 0.01)
+        do = random.uniform(0.3, 0.8)
+        batch_size = random.randint(500, 6000)
+        train_cnn(filter_sizes=filter_sizes, num_filters=num_filters, lr=lr, dropout_rate=do, batch_size=batch_size, e_dir=e_dir)
 
 def search_hyper_stacked():
-    dir = 'bla'
+    e_dir = '/mnt/data/group07/johannes/exp_stacked_0.5'
     while(True):
         h1 = random.randint(1, 10)
         h2 = random.randint(1, 10)
         lr = random.uniform(0.0001, 0.01)
         do = random.uniform(0.3, 0.6)
-        # batch_size = random.randint(500, 2000)
+        batch_size = random.randint(500, 2000)
         # batch_size = 2 ** random.randint(9, 12)
-        batch_size = 64
+        # batch_size = 64
         train_stacked(hidden_dims=[h1, h2], lr=lr,
-                      dropout_rate=do, batch_size=batch_size, dir=dir)
+                      dropout_rate=do, batch_size=batch_size, e_dir=e_dir)
 
 
 def build_dataset():
@@ -117,7 +128,7 @@ def build_dataset():
 
     # onyl build vocab on training data
     tokenizer.build_vocab(X_train)
-
+#    tokenizer.apply_encoding_options(limit_top_tokens=20000)
     util.build_save_data(X_train, y_train, tokenizer,
                          dir_proc_data + '/train.bin', max_len)
 

@@ -30,11 +30,11 @@ def _plot_history(history, path):
 
     # Loss
     plt.figure(1)
-    for l in loss_list:
-        plt.plot(epochs, history[l], 'b', label='Training loss (' + str(
+    l = loss_list[-1]
+    plt.plot(epochs, history[l], 'b', label='Training loss (' + str(
             str(format(history[l][-1], '.5f'))+')'))
-    for l in val_loss_list:
-        plt.plot(epochs, history[l], 'g', label='Validation loss (' + str(
+    l = val_loss_list[-1]
+    plt.plot(epochs, history[l], 'g', label='Validation loss (' + str(
             str(format(history[l][-1], '.5f'))+')'))
 
     plt.title('Loss')
@@ -46,11 +46,11 @@ def _plot_history(history, path):
 
     # Accuracy
     plt.figure(2)
-    for l in acc_list:
-        plt.plot(epochs, history[l], 'b', label='Training accuracy (' + str(
+    l = acc_list[-1]
+    plt.plot(epochs, history[l], 'b', label='Training accuracy (' + str(
             format(history[l][-1], '.5f'))+')')
-    for l in val_acc_list:
-        plt.plot(epochs, history[l], 'g', label='Validation accuracy (' + str(
+    l = val_acc_list[-1]
+    plt.plot(epochs, history[l], 'g', label='Validation accuracy (' + str(
             format(history[l][-1], '.5f'))+')')
 
     plt.title('Accuracy')
