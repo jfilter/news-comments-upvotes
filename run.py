@@ -1,14 +1,14 @@
 import json
+import os
 import pathlib
+import random
 import sys
 from shutil import copyfile, move
-import random
 
 import keras
 import numpy as np
 
 import util
-import vis
 from config import *
 from keras_text.data import Dataset
 from keras_text.models import AlexCNN, AttentionRNN, BasicLSTM, StackedRNN, TokenModelFactory, YoonKimCNN
@@ -24,6 +24,8 @@ epochs = 400
 patience = 10
 
 batch_size = 10000
+
+
 def train_stacked(lr=0.001, batch_size=batch_size, dropout_rate=0.5, hidden_dims=[10, 5], rnn_class=keras.layers.GRU, e_dir=None):
     word_encoder_model = StackedRNN(
         hidden_dims=hidden_dims, dropout_rate=dropout_rate, rnn_class=rnn_class)
@@ -78,8 +80,6 @@ def train(word_encoder_model, lr, batch_size, e_dir=None):
     history = model.fit(X_train, y_train, epochs=epochs,
                         batch_size=batch_size, validation_data=(X_val, y_val), callbacks=callbacks_list)
 
-    vis.plot_history(history, exp_path)
-
     best_acc = str(max(history.history['val_acc']))[:6]
 
     # append best acc
@@ -91,7 +91,8 @@ def test_data():
 
 
 def search_hyper_cnn():
-    e_dir = '/mnt/data/group07/johannes/exp_cnn_0.25'
+    e_dir = os.path.join(base_experiment_folder,
+                         'cnn_' + path_data.split('/')[-1])
     while(True):
         filter_sizes = None
         while(True):
@@ -103,10 +104,13 @@ def search_hyper_cnn():
         lr = random.uniform(0.0001, 0.01)
         do = random.uniform(0.3, 0.8)
         batch_size = random.randint(500, 6000)
-        train_cnn(filter_sizes=filter_sizes, num_filters=num_filters, lr=lr, dropout_rate=do, batch_size=batch_size, e_dir=e_dir)
+        train_cnn(filter_sizes=filter_sizes, num_filters=num_filters,
+                  lr=lr, dropout_rate=do, batch_size=batch_size, e_dir=e_dir)
+
 
 def search_hyper_stacked():
-    e_dir = '/mnt/data/group07/johannes/exp_stacked_0.5'
+    e_dir = os.path.join(base_experiment_folder,
+                         'stacked_' + path_data.split('/')[-1])
     while(True):
         h1 = random.randint(1, 10)
         h2 = random.randint(1, 10)
