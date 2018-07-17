@@ -69,3 +69,16 @@ def load_train_val():
     ds_val = Dataset.load(dir_proc_data + '/val.bin')
     X_val, y_val = ds_val.X, ds_val.y
     return X_train, y_train, X_val, y_val, ds_train.tokenizer
+
+
+def load_test(path_data, tokenizer):
+    max_len = 400
+    X, y = load_data(path_data + '/test.csv')
+
+    X_encoded = tokenizer.encode_texts(X)
+    X_padded = tokenizer.pad_sequences(
+        X_encoded, fixed_token_seq_length=max_len)
+
+    y_cat = keras.utils.to_categorical(y, num_classes=2)
+
+    return X_padded, y_cat

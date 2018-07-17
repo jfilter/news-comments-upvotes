@@ -87,7 +87,15 @@ def train(word_encoder_model, lr, batch_size, e_dir=None):
 
 
 def test_data():
-    pass
+    path = 'my_model.h5'
+    model = keras.models.load_model(path)
+
+    _, _, _, _, tokenizer = util.load_train_val()
+
+    X, y = util.load_test(path_data, tokenizer)
+
+    res = model.eval(x=X, y=y, batch_size=200)
+    print(res)
 
 
 def search_hyper_cnn():
@@ -111,6 +119,21 @@ def search_hyper_cnn():
 def search_hyper_stacked():
     e_dir = os.path.join(base_experiment_folder,
                          'stacked_' + path_data.split('/')[-1])
+    while(True):
+        h1 = random.randint(1, 10)
+        h2 = random.randint(1, 10)
+        lr = random.uniform(0.0001, 0.01)
+        do = random.uniform(0.3, 0.6)
+        batch_size = random.randint(500, 2000)
+        # batch_size = 2 ** random.randint(9, 12)
+        # batch_size = 64
+        train_stacked(hidden_dims=[h1, h2], lr=lr,
+                      dropout_rate=do, batch_size=batch_size, e_dir=e_dir)
+
+
+def search_hyper_simple():
+    e_dir = os.path.join(base_experiment_folder,
+                         'simple_lstm' + path_data.split('/')[-1])
     while(True):
         h1 = random.randint(1, 10)
         h2 = random.randint(1, 10)
@@ -160,6 +183,8 @@ def main():
         search_hyper_cnn()
     if sys.argv[1] == 'searchstacked':
         search_hyper_stacked()
+    if sys.argv[1] == 'test':
+        test_data()
 
 
 if __name__ == '__main__':
